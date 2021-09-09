@@ -26,7 +26,7 @@ sealed class Event () {
 
 data class State (val amount : Int)
 
-class Counter(ctx: PersistenceId) : EventSourcedBehavior<Command, Event, State>(ctx) {
+class Counter(persistenceId: PersistenceId) : EventSourcedBehavior<Command, Event, State>(persistenceId) {
 
     companion object {
         val EntityKey = EntityTypeKey.create(Command::class.java,"Counter")
@@ -79,6 +79,13 @@ class Counter(ctx: PersistenceId) : EventSourcedBehavior<Command, Event, State>(
 
 
 fun main(args: Array<String>) {
-    val system = ActorSystem.create("NumberService")
-    println("Hello World!")
+    val system : akka.actor.typed.ActorSystem<Any> = akka.actor.typed.ActorSystem.create(Behaviors.empty(),"CounterService")
+    try {
+        Counter.init(system)
+        val sharding = ClusterSharding.get(system)
+        println("Hello World!")
+    } catch (e:Exception) {
+        println("Exception occurred")
+        println(e.toString())
+    }
 }
