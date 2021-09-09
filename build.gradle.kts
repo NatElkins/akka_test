@@ -17,7 +17,10 @@ dependencies {
     testImplementation(kotlin("test-junit"))
     implementation(platform("com.typesafe.akka:akka-bom_${"2.13"}:2.6.15"))
 
+
+
     implementation("com.typesafe.akka:akka-persistence-typed_${"2.13"}")
+    implementation("com.typesafe.akka:akka-cluster-sharding-typed_${"2.13"}")
     testImplementation("com.typesafe.akka:akka-persistence-testkit_${"2.13"}")
 
 }
