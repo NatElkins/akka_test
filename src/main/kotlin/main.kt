@@ -10,8 +10,11 @@ import akka.persistence.typed.javadsl.EventSourcedBehavior
 import akka.actor.typed.ActorRef
 
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey
+import java.time.Duration
 
-sealed class Command () {
+interface CborSerializable {}
+
+sealed class Command () : CborSerializable {
     data class Increment(val i : Int): Command ()
     data class Decrement(val i : Int) : Command ()
     // This is to get around lack of parameterless constructors
@@ -19,7 +22,7 @@ sealed class Command () {
     data class Get(val replyTo: ActorRef<State>) : Command ()
 }
 
-sealed class Event () {
+sealed class Event () : CborSerializable {
     data class Incremented(val i : Int): Event ()
     data class Decremented(val i : Int) : Event ()
 }
@@ -83,6 +86,11 @@ fun main(args: Array<String>) {
     try {
         Counter.init(system)
         val sharding = ClusterSharding.get(system)
+        val ref = sharding.entityRefFor(Counter.EntityKey,"A")
+        ref.tell(Command.Increment(2))
+        val reply = ref.ask({ replyTo : ActorRef<State> -> Command.Get(replyTo)}, Duration.ofMillis(5000))
+        val state = reply.toCompletableFuture().get()
+        println("The state is $state")
         println("Hello World!")
     } catch (e:Exception) {
         println("Exception occurred")
